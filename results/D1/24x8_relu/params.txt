@@ -1,0 +1,5 @@
+T: 30
+start_lr_w: 3.456e-4
+start_lr_h: 1.020e-2
+trans_mult: 8.116
+decay_rate: 0.9064

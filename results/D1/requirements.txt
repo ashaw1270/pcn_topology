@@ -1,0 +1,33 @@
+# Core Scientific Computing
+numpy
+scipy
+matplotlib
+
+# Machine Learning & Deep Learning
+torch
+scikit-learn
+optax
+
+# JAX Ecosystem
+jax[cuda12]>=0.5.3,<0.6.0
+equinox>=0.11.7,<0.12.0
+
+# Predictive Coding Library
+# Note: pcx appears to be a custom library at /project2/alvinjin_1630/pcx
+# You'll need to install it from your local path or repository
+
+# Topological Data Analysis
+ripser
+# Note: ripser-plusplus (rpp_py) appears to be installed from /project2/alvinjin_1630/ripser-plusplus
+# You'll need to install it from your local path
+
+# Hyperparameter Optimization
+optuna
+optuna-dashboard
+
+# Utilities
+tqdm
+dill
+
+# Jupyter/IPython (if running in notebooks)
+ipython
