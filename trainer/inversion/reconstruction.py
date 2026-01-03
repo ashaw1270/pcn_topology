@@ -154,6 +154,9 @@ def invert_output(
     init_scale: float = 0.5,
     batch_size: int = 32,
     early_stop_energy: float | None = None,
+    l2_w=0.0,
+    l2_x=0.0,
+    l2_h=0.0,
     save=False,
     save_dir=None,
     # Trainer-specific parameters
@@ -214,7 +217,10 @@ def invert_output(
             hidden_dims=hidden_dims,
             act_fn=act_fn,
             model_key=model_keys[mid],
-            residual=residual
+            residual=residual,
+            l2_w=l2_w,
+            l2_x=l2_x,
+            l2_h=l2_h
         )
         pxu.load_params(model, f'{root}/{study_name}/trained_models/model_{mid}')
 
