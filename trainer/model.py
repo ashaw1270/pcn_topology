@@ -13,7 +13,10 @@ class Model(pxc.EnergyModule):
         hidden_dims,
         act_fn,
         model_key,
-        residual=False
+        residual=False,
+        l2_w=0.0,
+        l2_x=0.0,
+        l2_h=0.0
     ):
         super().__init__()
 
@@ -21,6 +24,9 @@ class Model(pxc.EnergyModule):
         self.output_dim = px.static(output_dim)
         self.act_fn = px.static(act_fn)
         self.residual = px.static(residual)
+        self.l2_w = px.static(float(l2_w))  # weight decay strength
+        self.l2_x = px.static(float(l2_x))  # input activity decay
+        self.l2_h = px.static(float(l2_h))  # hidden activity decay
 
         model_seed = int(jax.random.randint(model_key, (), 0, 2**31 - 1))
         model_rkg = px.RandomKeyGenerator(model_seed)

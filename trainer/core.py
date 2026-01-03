@@ -176,6 +176,9 @@ class Trainer:
         start_lr_h,
         trans_mult,
         decay_rate,
+        l2_w,
+        l2_x,
+        l2_h,
         early_stopping
     ):
         model_key = Trainer.model_keys[model_id]
@@ -185,7 +188,10 @@ class Trainer:
             hidden_dims=self.hidden_dims,
             act_fn=self.act_fn,
             model_key=model_key,
-            residual=self.residual
+            residual=self.residual,
+            l2_w=l2_w,
+            l2_x=l2_x,
+            l2_h=l2_h
         )
     
         # Dummy forward pass to initialize Vodes
@@ -198,7 +204,7 @@ class Trainer:
             init_h=start_lr_h,
             transition_steps=(len(self.train_dataset) // self.batch_size) * trans_mult,
             decay_rate=decay_rate,
-            T=T,
+            T=T
         )
     
         best_test_acc = 0
@@ -230,6 +236,9 @@ class Trainer:
         start_lr_h,
         trans_mult,
         decay_rate,
+        l2_w=0.0,
+        l2_x=0.0,
+        l2_h=0.0,
         model_ids=None,
         early_stopping=lambda epoch, test_acc: epoch > 100 and test_acc < 0.8
     ):
@@ -244,6 +253,9 @@ class Trainer:
                 start_lr_h=start_lr_h,
                 trans_mult=trans_mult,
                 decay_rate=decay_rate,
+                l2_w=l2_w,
+                l2_x=l2_x,
+                l2_h=l2_h,
                 early_stopping=early_stopping
             )
 

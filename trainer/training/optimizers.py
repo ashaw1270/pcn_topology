@@ -4,10 +4,11 @@ import pcx.nn as pxnn
 from trainer.model import Model
 
 
-def get_opts(model, init_w, init_h, transition_steps, decay_rate, T):
+def get_opts(model: Model, init_w, init_h, transition_steps, decay_rate, T):
     optim_w = pxu.Optim(
         lambda: optax.chain(
             optax.clip_by_global_norm(1.0),
+            optax.add_decayed_weights(model.l2_w.get()),
             optax.adamw(
                 learning_rate=optax.exponential_decay(
                     init_value=init_w,

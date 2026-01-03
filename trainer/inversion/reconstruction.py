@@ -11,21 +11,29 @@ import pcx.utils as pxu
 import pcx.predictive_coding as pxc
 
 
-def _energy_given_xy(x, y, *, model):
-    """
-    Scalar energy E(x,y) with a *fresh* PCN context.
-    - x: (B, input_dim) or (input_dim,)   (will be treated as batch)
-    - y: (B, output_dim) or (output_dim,)
-    Returns a Python float (sum over batch) so jax.grad works cleanly.
-    """
+@staticmethod
+def _energy_given_xy(x, y, *, model: "Model"):
     model.eval()
-    x = jnp.atleast_2d(x)
-    y = jnp.atleast_2d(y)
-    # fresh inference context so no state persists/leaks between calls
+    x = jnp.atleast_2d(x)  # (B,D)
+    y = jnp.atleast_2d(y)  # (B,C)
+
     with pxu.step(model, pxc.STATUS.INIT, clear_params=pxc.VodeParam.Cache):
-        _ = forward(x, y, model=model)    # sets the final layer's h to y internally
-        e = model.energy()                 # shape (B,)
-    return jnp.sum(e)                      # scalar
+        _ = forward(x, y, model=model)
+        e = model.energy()  # (B,)
+
+        l2_x = model.l2_x.get()
+        if l2_x > 0:
+            e = e + 0.5 * l2_x * jnp.sum(x * x, axis=-1)
+
+        l2_h = model.l2_h.get()
+        if l2_h > 0:
+            h_pen = 0.0
+            for vode in model.vodes[:-1]:
+                h = vode.get("h")            # (B,dim)
+                h_pen = h_pen + jnp.sum(h*h, axis=-1)
+            e = e + 0.5 * l2_h * h_pen
+
+    return jnp.sum(e)  # scalar
 
 
 def _rand_init(key, shape, kind="normal", scale=1.0, box=None):
