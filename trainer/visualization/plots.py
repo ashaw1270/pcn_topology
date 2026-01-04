@@ -110,7 +110,7 @@ def graph_betti_numbers(
         plt.grid(True, alpha=0.3)
     
         if title is None:
-            title = rf"$B_{dim}$ for {self.study_name}, {rf'$k={k}$ ' if k is not None else ''}at $\eta={eta}${'(No k-NN)' if k is None else ''}"
+            title = rf"$B_{dim}$ for {self.study_name}, {rf'$k={k}$ ' if k is not None else ''}at $\eta={eta}${ '(No k-NN)' if k is None else ''}"
         plt.title(title, fontsize=15, pad=10)
 
         ymax = int(np.max([np.max(betti_mat), np.max(mean_per_layer + std_per_layer)]))
