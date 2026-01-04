@@ -39,69 +39,15 @@ def run_optuna(
     residual,
     model_keys,
     get_epoch_dataloader_func,
+    l2_w_func=lambda trial: 0.0,
+    l2_x_func=lambda trial: 0.0,
+    l2_h_func=lambda trial: 0.0,
     early_stopping_within_key=lambda epoch, test_acc: epoch > 100 and test_acc < 0.8,
     early_stopping_whole_trial=lambda trial_num, test_acc: trial_num == 0 and test_acc == 0.61328125,
     prune_after_num_trials=8,
     prune_after_keys_tried=2,
     add_trials: list[dict] = None
 ):
-    """
-    Run Optuna hyperparameter optimization.
-    
-    Parameters
-    ----------
-    num_models : int
-        Number of models to train per trial
-    T_func : callable
-        Function that takes an Optuna trial and returns T (inference steps)
-    start_lr_w_func : callable
-        Function that takes an Optuna trial and returns initial learning rate for weights
-    start_lr_h_func : callable
-        Function that takes an Optuna trial and returns initial learning rate for hidden states
-    trans_mult_func : callable
-        Function that takes an Optuna trial and returns transition multiplier
-    decay_rate_func : callable
-        Function that takes an Optuna trial and returns decay rate
-    dataset : str
-        Dataset name ('D1', 'D2', 'D3', or 'MNIST')
-    root : str
-        Root directory for results
-    study_name : str
-        Name of the study
-    batch_size : int
-        Batch size for training
-    num_epochs : int
-        Number of epochs to train
-    input_dim : int
-        Input dimension
-    output_dim : int
-        Output dimension
-    hidden_dims : list[int]
-        Hidden layer dimensions
-    act_fn : callable
-        Activation function
-    residual : bool
-        Whether to use residual connections
-    model_keys : array-like
-        Array of model keys for initialization
-    get_epoch_dataloader_func : callable
-        Function that takes (model_id, epoch, train_dataset) and returns DataLoader
-    early_stopping_within_key : callable, optional
-        Early stopping function for individual models
-    early_stopping_whole_trial : callable, optional
-        Early stopping function for entire trial
-    prune_after_num_trials : int, default=8
-        Number of trials to run before pruning starts
-    prune_after_keys_tried : int, default=2
-        Number of keys to try before pruning starts
-    add_trials : list[dict], optional
-        Additional trials to enqueue
-    
-    Returns
-    -------
-    None
-        Side effect: creates Optuna study and runs optimization
-    """
     filetype = 'pkl' if dataset == 'D1' else 'dill'
     with open(f'{root}/train_test_split_25_percent.{filetype}', 'rb') as f:
         train_sub, test_sub = dill.load(f)
@@ -114,6 +60,9 @@ def run_optuna(
         start_lr_h = start_lr_h_func(trial)
         trans_mult = trans_mult_func(trial)
         decay_rate = decay_rate_func(trial)
+        l2_w = l2_w_func(trial)
+        l2_x = l2_x_func(trial)
+        l2_h = l2_h_func(trial)
     
         results = []
         for i in range(num_models):
@@ -124,7 +73,10 @@ def run_optuna(
                 hidden_dims=hidden_dims,
                 act_fn=act_fn,
                 model_key=model_key,
-                residual=residual
+                residual=residual,
+                l2_w=l2_w,
+                l2_x=l2_x,
+                l2_h=l2_h
             )
         
             # Dummy forward pass to initialize Vodes
