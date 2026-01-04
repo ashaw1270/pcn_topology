@@ -12,7 +12,7 @@ def graph_betti_numbers(
     true_b,
     title=None,
     dir_name='ripser_only_0_k14',
-    k=14,
+    k=14,  # set k = None when not using k-NN
     etas=[2.5],
     maxdim=0,
     figsize=(10, 6),
@@ -110,7 +110,7 @@ def graph_betti_numbers(
         plt.grid(True, alpha=0.3)
     
         if title is None:
-            title = rf"$B_{dim}$ for {study_name}, $k={k}$ at $\eta={eta}$"
+            title = rf"$B_{dim}$ for {self.study_name}, {rf'$k={k}$ ' if k is not None else ''}at $\eta={eta}${'(No k-NN)' if k is None else ''}"
         plt.title(title, fontsize=15, pad=10)
 
         ymax = int(np.max([np.max(betti_mat), np.max(mean_per_layer + std_per_layer)]))
@@ -122,7 +122,7 @@ def graph_betti_numbers(
         plt.tight_layout()
 
         if save:
-            plt.savefig(f'{root}/figures/individual/{filename if filename is not None else study_name}_B{dim}_k{k}_eta{eta}.png', dpi=300, bbox_inches="tight")
+            plt.savefig(f'{root}/figures/individual/{filename if filename is not None else study_name}_B{dim}_{f"k{k}" if k is not None else "no_knn"}_eta{eta}.png', dpi=300, bbox_inches="tight")
         
         plt.show()
     
