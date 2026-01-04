@@ -15,7 +15,7 @@ def run_ripser(
     root=None,
     study_name=None,
     dir_name='ripser_only_0_k14',
-    k=14,
+    k=14,  # set k = None to not use k-NN
     maxdim=0,
     thresh=5,
     model_ids=None,
@@ -103,6 +103,12 @@ def run_ripser(
     ripser_root = f'{root}/{study_name}/{dir_name}'
     os.makedirs(ripser_root, exist_ok=True)
 
+    use_knn = (k is not None)
+    if use_knn:
+        print('Using k-NN')
+    else:
+        print('Not using k-NN')
+
     for i, model_id in enumerate(tqdm(model_ids, desc='Running ripser')):
         all_layers = get_layers_func(
             dataset=dataset,
@@ -110,17 +116,24 @@ def run_ripser(
             input_layer=False,
             return_labels=False
         )
-        distance_matrices = get_distance_matrices(all_layers, k=k)
-        
+
         diagrams = []
-        for dist_mat in distance_matrices:
-            dgm = ripser(dist_mat, distance_matrix=True, maxdim=maxdim, thresh=thresh)['dgms']
-            diagrams.append(dgm)
+        if use_knn:
+            distance_matrices = get_distance_matrices(all_layers, k=k)
+            for dist_mat in distance_matrices:
+                dgm = ripser(dist_mat, distance_matrix=True, maxdim=maxdim, thresh=thresh)['dgms']
+                diagrams.append(dgm)
+        else:
+            for layer in all_layers:
+                dgm = ripser(layer, maxdim=maxdim, thresh=thresh)['dgms']
+                diagrams.append(dgm)
                 
         with open(f'{ripser_root}/model_{model_id}.dill', 'wb') as f:
             dill.dump(diagrams, f)
 
         # clean up memory usage
-        del all_layers, distance_matrices, diagrams, dist_mat, dgm
+        del all_layers, diagrams, dgm
+        if use_knn:
+            del distance_matrices, dist_mat
         gc.collect()
 
