@@ -271,11 +271,11 @@ def filter_studies(regexes=[], exclude=[], all_studies=None):
 
 
 def get_bootstrap_data(
-    data_filename='all_8_layer_models_all_stats_mean_alpha0.05',
+    data_filename='D1/betti_data/all_8_layer_models_all_stats_mean_alpha0.05',
     studies: list[str] = [],  # e.g., [r"30x8_relu", r"tanh"]
     exclude: list[str] = []
 ):
-    filepath = f'../../results/D1/betti_data/{data_filename}.json'
+    filepath = f'../../results/{data_filename}.json'
     with open(filepath, 'r') as f:
         data = json.load(f)
         
