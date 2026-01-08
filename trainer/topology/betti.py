@@ -23,11 +23,12 @@ def _betti_at_eta(diagram, eta, dim=0):
     return _betti_at_eta_one_dim(diagram[dim], eta)
 
 
-def get_betti_mat(dir_name='ripser_only_0_k14', eta=2.5, dim=0, root=None, study_name=None, true_b=None):
+def get_betti_mat(dir_name='ripser_only_0_k14', eta=2.5, dims=[0], root=None, study_name=None, true_b=None):
     """
     Returns a matrix of size (num_models, num_layers)
     betti_mat[0] is a list of size num_layers representing each layer of the first model
     For mat[0] to be a list of all models for the first layer, use betti_mat.T
+    If dims has multiple elements, the betti numbers of each dim will be SUMMED in the matrix
     
     Note: root, study_name, and true_b are required parameters that would typically
     come from a Trainer instance.
@@ -48,7 +49,10 @@ def get_betti_mat(dir_name='ripser_only_0_k14', eta=2.5, dim=0, root=None, study
     betti_mat = np.zeros((K, L), dtype=float)
     for j, diagrams in enumerate(all_diagrams):
         for ell, diagram in enumerate(diagrams):
-            betti_mat[j, ell] = _betti_at_eta(diagram, eta=eta, dim=dim)
+            entry = 0
+            for dim in dims:
+                entry += _betti_at_eta(diagram, eta=eta, dim=dim)
+            betti_mat[j, ell] = entry
 
     # Add input layer stats
     betti_mat = np.hstack([np.full((K,1), true_b[dim]), betti_mat])

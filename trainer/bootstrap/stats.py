@@ -270,40 +270,12 @@ def filter_studies(regexes=[], exclude=[], all_studies=None):
     return selected
 
 
-def get_bootstrap_data(
-    data_filename='D1/betti_data/all_8_layer_models_all_stats_mean_alpha0.05',
-    studies: list[str] = [],  # e.g., [r"30x8_relu", r"tanh"]
-    exclude: list[str] = []
-):
-    filepath = f'../../results/{data_filename}.json'
-    with open(filepath, 'r') as f:
-        data = json.load(f)
-        
-    if studies is None and exclude is None:
-        return data
-
-    _include = [re.compile(p) for p in studies]
-    _exclude = [re.compile(p) for p in exclude]
-    
-    def matches(name):
-        # must match at least one include-regex
-        inc_ok = not _include or any(r.search(name) for r in _include)
-        # must match *no* exclude-regex
-        exc_ok = not _exclude or not any(r.search(name) for r in _exclude)
-        return inc_ok and exc_ok
-
-    filtered = {
-        A: {B: vals for B, vals in inner.items() if matches(B)}
-        for A, inner in data.items() if matches(A)
-    }
-
-    return filtered
-
-
 def all_bootstrap_stats(
     filename: str,
     studies: list[str] = None,
-    B=5000,
+    dataset='D1',
+    dir_name='ripser_only_0_k14',
+    B=10000,
     seed=42,
     use_mean=True,
     p=0.95,
@@ -324,13 +296,12 @@ def all_bootstrap_stats(
     print(studies)
     print('Num studies:', len(studies))
     
-    # For D1 dataset, root and true_b are known constants
-    root = '../../results/D1'
+    root = f'../../results/{dataset}'
     true_b = [9, None]  # true_b for D1 dataset
     
     study_to_betti_by_layer = {}
     for s in studies:
-        betti_mat = get_betti_mat(root=root, study_name=s, true_b=true_b).T
+        betti_mat = get_betti_mat(dir_name=dir_name, root=root, study_name=s, true_b=true_b).T
         study_to_betti_by_layer[s] = betti_mat
 
     def _bootstrap_layer_stats(X, Y):
@@ -413,10 +384,40 @@ def all_bootstrap_stats(
 
     if save:
         p_or_mean = 'mean' if use_mean else f'p{p}'
-        filepath = f'../../results/D1/betti_data/{filename}_all_stats_{p_or_mean}_alpha{alpha}.json'
+        filepath = f'../../results/{dataset}/betti_data/{filename}_all_stats_{p_or_mean}_alpha{alpha}.json'
         
         with open(filepath, "w") as f:
             json.dump(out, f, indent=2)
 
     return out
+
+
+def get_bootstrap_data(
+    data_filename='D1/betti_data/all_8_layer_models_all_stats_mean_alpha0.05',
+    studies: list[str] = [],  # e.g., [r"30x8_relu", r"tanh"]
+    exclude: list[str] = []
+):
+    filepath = f'../../results/{data_filename}.json'
+    with open(filepath, 'r') as f:
+        data = json.load(f)
+        
+    if studies is None and exclude is None:
+        return data
+
+    _include = [re.compile(p) for p in studies]
+    _exclude = [re.compile(p) for p in exclude]
+    
+    def matches(name):
+        # must match at least one include-regex
+        inc_ok = not _include or any(r.search(name) for r in _include)
+        # must match *no* exclude-regex
+        exc_ok = not _exclude or not any(r.search(name) for r in _exclude)
+        return inc_ok and exc_ok
+
+    filtered = {
+        A: {B: vals for B, vals in inner.items() if matches(B)}
+        for A, inner in data.items() if matches(A)
+    }
+
+    return filtered
 
